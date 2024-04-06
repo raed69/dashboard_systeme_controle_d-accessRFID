@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
+import AddCardIcon from '@mui/icons-material/AddCard';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Modal from '@mui/material/Modal';
 import { Box } from '@mui/material';
 import EditUserForm from './EditUser';
+import AddOtherCartetouser from './AddOtherCartetouser';
 
 const style = {
   position: 'absolute',
@@ -20,8 +22,9 @@ const style = {
 };
 
 function User() {
-  const [open, setOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState(null); 
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openAddCartModal, setOpenAddCartModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -31,13 +34,21 @@ function User() {
       .catch(err => console.log(err));
   }, []);
 
-  const toggleModal = (id_user) => {
-    setOpen(!open);
+  const toggleModal = (id_user, type) => {
     setSelectedUserId(id_user);
+    if (type === 'edit') {
+      setOpenEditModal(!openEditModal);
+    } else if (type === 'addCart') {
+      setOpenAddCartModal(!openAddCartModal);
+    }
   };
 
   const handleEdit = (id_user) => {
-    toggleModal(id_user);
+    toggleModal(id_user, 'edit');
+  };
+
+  const handleAddcart = async (id_user) => {
+    toggleModal(id_user, 'addCart');
   };
 
   const handleDelete = async (id_user) => {
@@ -46,11 +57,11 @@ function User() {
         const response = await fetch(`http://localhost:5000/user/${id_user}`, {
           method: 'DELETE',
         });
-  
+
         if (!response.ok) {
           throw new Error('Failed to delete user');
         }
-  
+
         console.log('User deleted successfully');
         window.location.reload();
         setData(data.filter(user => user.id_user !== id_user));
@@ -62,7 +73,6 @@ function User() {
       }
     }
   };
-  
 
   const columns = [
     { field: 'id_user', headerName: 'ID', width: 60 },
@@ -76,16 +86,18 @@ function User() {
       field: 'actions',
       headerName: 'Actions',
       width: 190,
-      
+
       sortable: false,
       renderCell: (params) => {
         return (
           <div>
-            <IconButton onClick={() => handleEdit(params.row.id_user)} sx={{ color: 'green' }}>
+            <IconButton onClick={(e) => { e.stopPropagation(), handleEdit(params.row.id_user)}} sx={{ color: 'green' }}>
               <EditIcon />
             </IconButton>
-            
-            <IconButton onClick={() => handleDelete(params.row.id_user)} sx={{ color: 'red' }}>
+            <IconButton onClick={(e) => {e.stopPropagation(),handleAddcart(params.row.id_user)} }sx={{ color: 'yellow' }}>
+              <AddCardIcon />
+            </IconButton>
+            <IconButton onClick={(e) => {e.stopPropagation(),handleDelete(params.row.id_user)}} sx={{ color: 'red' }}>
               <DeleteIcon />
             </IconButton>
           </div>
@@ -96,19 +108,29 @@ function User() {
 
   return (
     <>
-       <Modal
-        open={open}
-        onClose={toggleModal}
+      <Modal
+        open={openEditModal}
+        onClose={() => toggleModal(null, 'edit')}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-         {selectedUserId && <EditUserForm id_user={selectedUserId} />}
+          {selectedUserId && <EditUserForm id_user={selectedUserId} />}
+        </Box>
+      </Modal>
+      <Modal
+        open={openAddCartModal}
+        onClose={() => toggleModal(null, 'addCart')}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          {selectedUserId && <AddOtherCartetouser id_user={selectedUserId} />}
         </Box>
       </Modal>
       <div style={{ height: 400, width: '95%' }}>
         <div style={{ color: 'SkyBlue' }}>
-          <h1>Liste des utilisateurs</h1>      
+          <h1>Liste des utilisateurs</h1>
         </div>
         <DataGrid
           rows={data}

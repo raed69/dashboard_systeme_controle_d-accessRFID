@@ -1,4 +1,4 @@
-const { where } = require('sequelize');
+const { where, Op } = require('sequelize');
 const Addcarte = require('../fonctions/FOR_USER/Addcarts');
 const { calculer_nombre_carte } = require('../fonctions/FOR_USER/Calcuer_nombre_carte');
 const { alias_genere } = require('../fonctions/FOR_USER/Generer_alias')
@@ -51,12 +51,29 @@ const creer_user_avec_sa_carte = async (req, res, next) => {
 const Addothercartetouser = async (req, res, next) => {
     try {
         const userId = req.params.id_user;
-        await Addcarte(userId); 
+        const { statut, nombre_max_entree, date_expiration, id_timezone } = req.body;
 
-        
-        const nombre_de_cartes = await calculer_nombre_carte(userId);
+        // Ajouter une carte à l'utilisateur
+        await Addcarte(userId);
+
+        // Trouver la carte ajoutée récemment à l'utilisateur
+        const carteAddedToUser = await Carte.findOne({ 
+            where: { id_user: userId },
+            order: [['id_carte', 'DESC']] // Trie par id_carte en ordre descendant pour obtenir la carte la plus récente
+        });
+
+        // Mettre à jour les détails de la dernière carte ajoutée à l'utilisateur
+        await Carte.update(
+            { statut, nombre_max_entree, date_expiration, id_timezone },
+            { where: { id_carte: carteAddedToUser.id_carte } }
+        );
+
+        // Calculer le nombre de cartes associées à l'utilisateur
+        const nombreDeCartes = await calculer_nombre_carte(userId);
+
+        // Mettre à jour le nombre de cartes associées à l'utilisateur dans la table User
         await User.update(
-            { nombre_carte: nombre_de_cartes },
+            { nombre_carte: nombreDeCartes },
             { where: { id_user: userId } }
         );
 
@@ -66,6 +83,7 @@ const Addothercartetouser = async (req, res, next) => {
         return res.status(500).json({ message: 'Une erreur est survenue lors de l\'ajout de la carte' });
     }
 };
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const ReadOneuser = async (req, res, next) => {
     try {

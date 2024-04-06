@@ -46,7 +46,8 @@ app.patch('/lastuser/carte',userrouter)
 ///API CARTE ///////
 app.post('/carte',carterouter)
 app.get('/cartes',carterouter)
-
+app.patch('/carte/update/:id_carte',carterouter)
+app.delete('/carte/delete/:id_carte',carterouter)
 ////API TIMEZONE////
 app.post('/timezone/creer',timezonerouter)
 app.get('/timezones',timezonerouter)

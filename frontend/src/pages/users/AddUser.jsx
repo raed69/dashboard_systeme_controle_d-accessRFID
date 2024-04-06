@@ -18,11 +18,11 @@ function AddUserForm() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
   } = useForm();
   const [selectedImage, setSelectedImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [userId, setUserId] = useState(null); // Ajout de l'état pour l'ID de l'utilisateur
   const watchedFields = watch();
 
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -71,17 +71,17 @@ function AddUserForm() {
       });
 
       if (response.ok) {
-        localStorage.setItem("id_user", data.id_user);
-        console.log(data.id_user)
-        console.log("User created successfully");
+        const userData = await response.json();
+        const newUserId = userData.id_user;
+        setUserId(newUserId); // Mettre à jour l'ID de l'utilisateur
+        localStorage.setItem("id_user", newUserId);
         handleClickSuccess();
+        console.log("User created successfully with ID:", newUserId);
         window.location.href = "/userbadge";
-      } else {
-        console.error("Failed to create user");
-        handleClickError(); /*notification d'alert carte insuffisant*/
       }
     } catch (error) {
       console.error("Error creating user:", error);
+      handleClickError();
     } finally {
       setSubmitting(false);
     }
@@ -89,7 +89,7 @@ function AddUserForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="user-form">
-      <Grid container justifyContent="center" spacing={4}>
+       <Grid container justifyContent="center" spacing={4}>
         <Grid item xs={12}>
           <Typography
             variant="h4"
@@ -256,6 +256,21 @@ function AddUserForm() {
               sx={{ width: "100%" }}
             >
               Stocke de carte est insufisant !
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            open={openError}
+            autoHideDuration={1000}
+            onClose={handleCloseError}
+          >
+            <Alert
+              onClose={handleCloseError}
+              severity="error"
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              Cet User deja existe !
             </Alert>
           </Snackbar>
         </Grid>
