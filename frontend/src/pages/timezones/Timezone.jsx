@@ -205,7 +205,11 @@ const App = () => {
       console.log(dataToSend);
 
       // Make a POST request to your backend server
+<<<<<<< HEAD
       const response = await axios.post('http://localhost:5000/timezone/creer', dataToSend);
+=======
+      const response = await axios.post('http://localhost:3000/timezone/', dataToSend);
+>>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
 
       console.log('Response from server:', response.data); // Log the response from the server
 
@@ -224,10 +228,17 @@ const App = () => {
 
   return (
     <Container>
+<<<<<<< HEAD
       <Title>Timezones</Title>
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <FormLabel> nom timezone:</FormLabel>
+=======
+      <Title>Timezone Scheduler</Title>
+      <Form onSubmit={handleSubmit}>
+        <FormGroup>
+          <FormLabel>Enter timezone:</FormLabel>
+>>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
           <FormInput type="text" placeholder="Enter timezone" value={timezone} onChange={handleTimezoneChange} />
         </FormGroup>
 
@@ -266,11 +277,19 @@ const App = () => {
             </TimeContainer>
           </ScheduleContainer>
         ))}
+<<<<<<< HEAD
         <Button type="submit">Enregistrer</Button>
+=======
+        <Button type="submit">Submit</Button>
+>>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
       </Form>
       <SuccessButton onClick={handleAddSchedule}>Add Schedule</SuccessButton>
     </Container>
   );
 };
 
+<<<<<<< HEAD
 export default App;
+=======
+export default App;
+>>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
