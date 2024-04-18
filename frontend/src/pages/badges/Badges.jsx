@@ -21,6 +21,8 @@ const style = {
   overflowY: 'auto', // In case the content is too tall
 };
 
+
+
 function Badges() {
   const [data, setData] = useState([]);
   const [selectedCarteId, setSelectedCarteId] = useState(null);
@@ -43,7 +45,7 @@ function Badges() {
         setData(jsonData.cartesWithUsers || []);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setOpenError(true); // Open the error snackbar/notification
+        
       }
     };
 
@@ -78,8 +80,14 @@ function Badges() {
     { field: 'numero', headerName: 'Numéro', width: 150 },
     { field: 'statut', headerName: 'Statut', width: 160 },
     { field: 'nombre_max_entree', headerName: 'Nombre maximal d\'entrées', width: 200 },
-    { field: 'date_expiration', headerName: 'Date d\'expiration', width: 190 },
-    { field: 'id_user', headerName: 'Propritaire', width: 180 }, // Corrected 'headeName' to 'headerName'
+    { 
+      field: 'date_expiration', 
+      headerName: 'Date d\'expiration', 
+      width: 160,
+     
+
+    },
+    { field: 'propritaire', headerName: 'Propritaire', width: 180 },
     {
       field: 'actions',
       headerName: '',

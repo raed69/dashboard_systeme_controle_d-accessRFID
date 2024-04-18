@@ -1,9 +1,18 @@
-const { where, Op } = require('sequelize');
+const { where, Op, Model } = require('sequelize');
 const Addcarte = require('../fonctions/FOR_USER/Addcarts');
 const { calculer_nombre_carte } = require('../fonctions/FOR_USER/Calcuer_nombre_carte');
 const { alias_genere } = require('../fonctions/FOR_USER/Generer_alias')
 const Carte = require('../models/Carte')
-const User=require('../models/User')
+const User=require('../models/User');
+const { publishCardDataToBroker } = require('../service broker/publish/clientcarte');
+const Timezone_Jours_Timeslot = require('../models/Timezone_jours_timeslot');
+const { recuperer_details_timezone } = require('./Timezon');
+const Jours_Timeslot = require('../models/Jours_Timeslot');
+const Timeslot = require('../models/Timeslot');
+const Timezone = require('../models/Timezone');
+const Jours = require('../models/Jours');
+
+
 
 const creer_user_avec_sa_carte = async (req, res, next) => {
     try {
@@ -33,8 +42,11 @@ const creer_user_avec_sa_carte = async (req, res, next) => {
             nomber_carte:nomber_carte,
         });
 
+
         const associeeCarteUser = Carte.update(
-            { id_user: newUser.id_user },
+            { id_user: newUser.id_user, 
+              propritaire:newUser.nom +' '+ newUser.prenom
+            },
             { where: { id_carte: carteLibre.id_carte } }
         );
 
@@ -47,6 +59,80 @@ const creer_user_avec_sa_carte = async (req, res, next) => {
         return res.status(500).json({ error: 'Problème lors de la création de l\'utilisateur.' });
     }
 };
+///////////////////////////////////////////////////
+const Update_user_carte = async (req, res, next) => {
+    try {
+        const { statut,nombre_max_entree,date_expiration,id_timezone} = req.body;
+        
+        const id_last_user = await User.max('id_user');
+        const lastcreated_user = await User.findOne({ where: { id_user: id_last_user } });
+        const nom_last_user= lastcreated_user.nom
+        const prenom_last_user=lastcreated_user.prenom
+        if (!lastcreated_user) {
+            return res.status(500).json({ message: "Aucun utilisateur n'existe avec cet ID" });
+        }
+
+      const updated_carte=  await Carte.update({
+            statut,
+            nombre_max_entree,
+            date_expiration,
+            id_timezone,
+            propritaire:nom_last_user + ' ' + prenom_last_user
+        }, {
+            where: { id_user: lastcreated_user.id_user }
+        });
+      
+        const updatedCardData = await Carte.findOne({ where: { id_user: lastcreated_user.id_user } });
+        
+        
+        const jourTimeslots = await Timezone_Jours_Timeslot.findAll({
+            where: { id_timezone: updatedCardData.id_timezone },
+            include: [
+              {
+                model: Jours_Timeslot,
+                include: [
+                  {
+                    model: Jours,
+                    attributes: ['nom_jours'] // Exclure l'ID de Jours
+                  },
+                  {
+                    model: Timeslot,
+                    attributes: ['heure_entree', 'heure_sortie'] // Exclure l'ID de Timeslot
+                  }
+                ],
+                attributes: ['JourIdJours'] // Exclure l'ID de jourTimeslot
+              }
+            ],
+            attributes: [] // Exclure tous les attributs de Timezone_Jours_Timeslot
+          });
+      
+          if (!jourTimeslots.length) {
+            return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
+          }
+      
+          // Transform and flatten the structure for easier use
+          const formattedDetails = jourTimeslots.map(slot => ({
+            jour: slot.Jours_Timeslot.Jour.nom_jours,
+            heures: {
+                entree: slot.Jours_Timeslot.Timeslot.heure_entree,
+                sortie: slot.Jours_Timeslot.Timeslot.heure_sortie
+            }
+          }));
+
+        // Publish to MQTT broker
+        await publishCardDataToBroker(updatedCardData, formattedDetails);
+        
+      
+            return res.status(200).json({ message: "Les informations de la carte utilisateur ont été mises à jour avec succès" });
+     
+        
+    } catch (error) {
+        console.error('Error updating user carte:', error);
+        return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des informations de la carte utilisateur" });
+    }
+}
+
+//////////////////////////////////////////////////
 
 const Addothercartetouser = async (req, res, next) => {
     try {
@@ -63,11 +149,50 @@ const Addothercartetouser = async (req, res, next) => {
         });
 
         // Mettre à jour les détails de la dernière carte ajoutée à l'utilisateur
-        await Carte.update(
+       await Carte.update(
             { statut, nombre_max_entree, date_expiration, id_timezone },
             { where: { id_carte: carteAddedToUser.id_carte } }
         );
+        const updatedCardData = await Carte.findOne({ where: { id_carte: carteAddedToUser.id_carte } });
+        
+        
+        const jourTimeslots = await Timezone_Jours_Timeslot.findAll({
+            where: { id_timezone: updatedCardData.id_timezone },
+            include: [
+              {
+                model: Jours_Timeslot,
+                include: [
+                  {
+                    model: Jours,
+                    attributes: ['nom_jours'] // Exclure l'ID de Jours
+                  },
+                  {
+                    model: Timeslot,
+                    attributes: ['heure_entree', 'heure_sortie'] // Exclure l'ID de Timeslot
+                  }
+                ],
+                attributes: ['JourIdJours'] // Exclure l'ID de jourTimeslot
+              }
+            ],
+            attributes: [] // Exclure tous les attributs de Timezone_Jours_Timeslot
+          });
+      
+          if (!jourTimeslots.length) {
+            return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
+          }
+      
+          // Transform and flatten the structure for easier use
+          const formattedDetails = jourTimeslots.map(slot => ({
+            dayofweek: slot.Jours_Timeslot.Jour.nom_jours,
+            heures: {
+                entry_time: slot.Jours_Timeslot.Timeslot.heure_entree,
+                exit_time: slot.Jours_Timeslot.Timeslot.heure_sortie
+            }
+          }));
 
+        // Publish to MQTT broker
+        await publishCardDataToBroker(updatedCardData, formattedDetails);
+       
         // Calculer le nombre de cartes associées à l'utilisateur
         const nombreDeCartes = await calculer_nombre_carte(userId);
 
@@ -164,7 +289,7 @@ const DeleteUser = async (req, res, next) => {
 
         // Update related Carte records asynchronously
         const updateCartesPromise = Carte.update({
-            stat: 'active',
+            statue: 'active',
             nombre_max_entree: null,
             date_expiration: null,
             id_timezone: null
@@ -175,13 +300,20 @@ const DeleteUser = async (req, res, next) => {
         // Wait for all async operations to complete
         await Promise.all([updateCartesPromise]);
 
+        // Fetch updated card data
+        const updatedCardData = await Carte.findOne({ where: { id_user: userId } });
+
+        // Publish updated card data to the broker
+        await publishCardDataToBroker(updatedCardData);
+
         // Return success response
         return res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
-        console.log(error);
+        console.error('Error deleting user:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const Get_user_card_id = async (req, res, next) => {
@@ -208,39 +340,11 @@ const Get_user_card_id = async (req, res, next) => {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const Update_user_carte = async (req, res, next) => {
-    try {
-        const { statut,nombre_max_entree,date_expiration,id_timezone} = req.body;
-        
-        const id_last_user = await User.max('id_user');
-        const lastcreated_user = await User.findOne({ where: { id_user: id_last_user } });
-
-        if (!lastcreated_user) {
-            return res.status(500).json({ message: "Aucun utilisateur n'existe avec cet ID" });
-        }
-
-        await Carte.update({
-            statut,
-            nombre_max_entree,
-            date_expiration,
-            id_timezone
-        }, {
-            where: { id_user: lastcreated_user.id_user }
-        });
-      
-          
-            return res.status(200).json({ message: "Les informations de la carte utilisateur ont été mises à jour avec succès" });
-     
-        
-    } catch (error) {
-        console.error('Error updating user carte:', error);
-        return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des informations de la carte utilisateur" });
-    }
-}
 
 
 
-module.exports={creer_user_avec_sa_carte,
+module.exports={
+creer_user_avec_sa_carte,
 Addothercartetouser,
 ReadOneuser,
 ReadAlluser,

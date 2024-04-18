@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./src/configDatabase/database'); 
+const mqtt =require('mqtt')
 const cors =require('cors')
 const usermodel=require('./src/models/User') ;
 const cartemodel=require('./src/models/Carte')
@@ -23,6 +24,8 @@ const { Initialisation_notificiation } = require('./src/fonctions/FOR_TYPE_EVENT
 const { initialisation_porte_status } = require('./src/fonctions/FOR_TYPE_EVENT/init_porte_status');
 const { initialisation_remarque } = require('./src/fonctions/FOR_TYPE_EVENT/init_remarque');
 const { insertInitialCards } = require('./src/fonctions/FOR_Carte/produire200badges');
+const brokerUri = require('./src/service broker/brokerConfig');
+
 
 
 
@@ -62,6 +65,15 @@ app.get('/jours',joursrouter)
 ////API DOOR SETINGS///
 app.post('/portesettings',portesettingsrouter)
 app.patch('/portesettings/:id',portesettingsrouter)
+
+
+
+
+
+
+
+////connecter au broker
+const client = mqtt.connect(brokerUri);
 
 
 // Sync the database and start the server

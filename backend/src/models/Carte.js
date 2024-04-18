@@ -25,7 +25,7 @@ const Carte = sequelize.define('Carte', {
         allowNull: true,
     },
     date_expiration: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: true,
     },
     id_timezone: {
@@ -35,6 +35,10 @@ const Carte = sequelize.define('Carte', {
             model: Timezone, 
             key: 'id_timezone' 
         }
+    },
+    propritaire:{
+        type:DataTypes.STRING,
+        allowNull:true
     }
 }, {
     timestamps: false // Désactive les timestamps

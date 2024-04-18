@@ -17,7 +17,8 @@ const Addcarte = async (userId) => {
         }
 
         userexiste.carte_numero += userexiste.carte_numero ? `    //   ${cartelibre.numero}` : `${cartelibre.numero}`;
-
+        const nom_this_user=userexiste.nom
+        const prenom_this_user= userexiste.prenom
         console.log(userexiste.carte_numero);
 
       
@@ -28,7 +29,8 @@ const Addcarte = async (userId) => {
 
        
         await Carte.update(
-            { id_user: userId },
+            { id_user: userId
+                ,propritaire:nom_this_user + ' ' + prenom_this_user },
             { where: { id_carte: cartelibre.id_carte } }
         );
 

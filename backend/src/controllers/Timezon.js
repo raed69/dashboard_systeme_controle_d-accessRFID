@@ -124,13 +124,23 @@ const recuperer_details_timezone = async (req, res, next) => {
       return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
     }
 
+    // Transform and flatten the structure for easier use
+    const formattedDetails = jourTimeslots.map(slot => ({
+      jour: slot.Jours_Timeslot.Jour.nom_jours,
+      heures: {
+          entree: slot.Jours_Timeslot.Timeslot.heure_entree,
+          sortie: slot.Jours_Timeslot.Timeslot.heure_sortie
+      }
+    }));
+
     // Répondre avec les détails structurés par jour
-    res.json({ id: id, timezone_details: jourTimeslots });
+    res.json({ id: id, timezone_details: formattedDetails });
   } catch (error) {
     console.error('Erreur lors de la récupération des détails de la timezone :', error);
     res.status(500).send('Erreur interne du serveur');
   }
 };
+
 
 
 

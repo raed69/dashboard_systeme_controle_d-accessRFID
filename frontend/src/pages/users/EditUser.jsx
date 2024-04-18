@@ -25,31 +25,36 @@ function EditUserForm({ id_user }) {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!id_user) return;
-      try {
-        const response = await fetch(`http://localhost:5000/user/${id_user}`);
-        if (!response.ok) {
-          throw new Error('Could not fetch user data');
+        if (!id_user) return;
+        try {
+            const response = await fetch(`http://localhost:5000/user/${id_user}`);
+            if (!response.ok) {
+                throw new Error('Could not fetch user data');
+            }
+            const userData = await response.json();
+            setUserData(userData);
+            setValue('nom', userData.user?.nom ?? '');
+            setValue('prenom', userData.user?.prenom ?? '');
+            setValue('cin', userData.user?.cin ?? '');
+            setValue('telephone', userData.user?.telephone ?? '');
+            setValue('email', userData.user?.email ?? '');
+            
+            // Check if user has a photo
+            if (userData.user.photo) {
+                // Convert the Buffer data to a base64 string
+                const base64String = Buffer.from(userData.user.photo.data).toString('base64');
+                // Set the base64 string as the selected image
+                setSelectedImage(`data:image/jpeg;base64,${base64String}`);
+            }
+            console.log(userData.user.nom);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
         }
-        const userData = await response.json();
-        setUserData(userData);
-        setValue('nom', userData.nom);
-        setValue('prenom', userData.prenom);
-        setValue('cin', userData.cin);
-        setValue('telephone', userData.telephone);
-        setValue('email', userData.email);
-        if (userData.photo) {
-          setSelectedImage(userData.photo);
-        }
-        console.log(userData)
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
     };
   
     fetchUserData();
-  }, [id_user, setValue]);
-  
+}, [id_user, setValue]);
+
 
   const handleImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {

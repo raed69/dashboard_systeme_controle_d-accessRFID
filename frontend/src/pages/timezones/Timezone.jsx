@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import axios from 'axios'; // Import Axios
+import axios from 'axios';
 
 const Container = styled.div`
   margin: 20px;
@@ -44,14 +44,6 @@ const Button = styled.button`
 
   &:hover {
     background-color: #0056b3;
-  }
-`;
-
-const DangerButton = styled(Button)`
-  background-color: #dc3545;
-
-  &:hover {
-    background-color: #c82333;
   }
 `;
 
@@ -104,8 +96,19 @@ const AddTimeButton = styled(SuccessButton)`
   }
 `;
 
-const RemoveButton = styled(DangerButton)`
+const RemoveButton = styled(Button)`
+  padding: 10px 20px;
   margin-top: 10px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #c82333;
+  }
 `;
 
 const Separator = styled.hr`
@@ -113,29 +116,6 @@ const Separator = styled.hr`
   border: none;
   border-top: 1px solid #ccc;
 `;
-
-const TimeRange = ({ index, time, onTimeChange }) => {
-  const handleTimeChange = (field, value) => {
-    onTimeChange(index, { ...time, [field]: value });
-  };
-
-  return (
-    <TimeRangeWrapper>
-      <FormLabel>Start Time:</FormLabel>
-      <TimeRangeInput
-        type="time"
-        value={time.heure_entree}
-        onChange={(e) => handleTimeChange('heure_entree', e.target.value)}
-      />
-      <FormLabel>End Time:</FormLabel>
-      <TimeRangeInput
-        type="time"
-        value={time.heure_sortie}
-        onChange={(e) => handleTimeChange('heure_sortie', e.target.value)}
-      />
-    </TimeRangeWrapper>
-  );
-};
 
 const App = () => {
   const [timezone, setTimezone] = useState('');
@@ -153,6 +133,8 @@ const App = () => {
       timeslot: [{ heure_entree: '', heure_sortie: '' }]
     }
   ]);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleDayChange = (index, updatedDays) => {
     const updatedScheduledTimes = [...scheduledTimes];
@@ -202,21 +184,17 @@ const App = () => {
         timeslot: schedule.timeslot
       }));
 
-      console.log(dataToSend);
-
       // Make a POST request to your backend server
-<<<<<<< HEAD
       const response = await axios.post('http://localhost:5000/timezone/creer', dataToSend);
-=======
-      const response = await axios.post('http://localhost:3000/timezone/', dataToSend);
->>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
 
-      console.log('Response from server:', response.data); // Log the response from the server
-
-      // Optionally, you can handle the response or perform any other actions here
+      // Handle success
+      setSuccessMessage('Timezone configuration saved successfully!');
+      setErrorMessage('');
 
     } catch (error) {
-      console.error('Error submitting data:', error); // Log any errors
+      // Handle error
+      setErrorMessage('Error saving timezone configuration');
+      setSuccessMessage('');
     }
   };
 
@@ -228,17 +206,12 @@ const App = () => {
 
   return (
     <Container>
-<<<<<<< HEAD
-      <Title>Timezones</Title>
+      <Title>Timezone Configuration</Title>
+      {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
+      {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
       <Form onSubmit={handleSubmit}>
         <FormGroup>
-          <FormLabel> nom timezone:</FormLabel>
-=======
-      <Title>Timezone Scheduler</Title>
-      <Form onSubmit={handleSubmit}>
-        <FormGroup>
-          <FormLabel>Enter timezone:</FormLabel>
->>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
+          <FormLabel>Timezone Name:</FormLabel>
           <FormInput type="text" placeholder="Enter timezone" value={timezone} onChange={handleTimezoneChange} />
         </FormGroup>
 
@@ -277,19 +250,34 @@ const App = () => {
             </TimeContainer>
           </ScheduleContainer>
         ))}
-<<<<<<< HEAD
-        <Button type="submit">Enregistrer</Button>
-=======
-        <Button type="submit">Submit</Button>
->>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
+        <Button type="submit">Save</Button>
       </Form>
       <SuccessButton onClick={handleAddSchedule}>Add Schedule</SuccessButton>
     </Container>
   );
 };
 
-<<<<<<< HEAD
+const TimeRange = ({ index, time, onTimeChange }) => {
+  const handleTimeChange = (field, value) => {
+    onTimeChange(index, { ...time, [field]: value });
+  };
+
+  return (
+    <TimeRangeWrapper>
+      <FormLabel>Start Time:</FormLabel>
+      <TimeRangeInput
+        type="time"
+        value={time.heure_entree}
+        onChange={(e) => handleTimeChange('heure_entree', e.target.value)}
+      />
+      <FormLabel>End Time:</FormLabel>
+      <TimeRangeInput
+        type="time"
+        value={time.heure_sortie}
+        onChange={(e) => handleTimeChange('heure_sortie', e.target.value)}
+      />
+    </TimeRangeWrapper>
+  );
+};
+
 export default App;
-=======
-export default App;
->>>>>>> c439fc3187ef54eeffc585831c8c00a8fe0fc63b
