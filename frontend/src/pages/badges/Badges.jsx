@@ -4,30 +4,62 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Modal from '@mui/material/Modal';
-import { Box, Snackbar, Alert } from '@mui/material';
+import { Box, Snackbar, Alert, Typography, useMediaQuery, Grid } from '@mui/material';
 import EditCarteForm from './EditCarteForm';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+
+function CustomPagination({ page, setPage, pageSize, setPageSize }) {
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(newPageSize);
+    setPage(0);
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+      <IconButton onClick={() => handlePageChange(page - 1)} disabled={page === 0}>
+        <KeyboardArrowLeft />
+      </IconButton>
+      <IconButton onClick={() => handlePageChange(page + 1)}>
+        <KeyboardArrowRight />
+      </IconButton>
+      <span style={{ marginLeft: '8px', marginRight: '8px' }}>Page: {page + 1}</span>
+      <span style={{ marginLeft: '8px', marginRight: '8px' }}>Taille de page:</span>
+      <select value={pageSize} onChange={(e) => handlePageSizeChange(Number(e.target.value))}>
+        <option value={5}>5</option>
+        <option value={10}>10</option>
+        <option value={20}>20</option>
+      </select>
+    </div>
+  );
+}
 
 const style = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '90vw', // Use viewport width to make it responsive
-  maxWidth: '400px', // Ensure it doesn't get too wide on large screens
+  width: '1000vw', 
+  maxWidth: '400px', 
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
-  overflowY: 'auto', // In case the content is too tall
+  overflowY: 'auto', 
 };
-
-
 
 function Badges() {
   const [data, setData] = useState([]);
   const [selectedCarteId, setSelectedCarteId] = useState(null);
   const [open, setOpen] = useState(false);
-  const [openError, setOpenError] = useState(false); // State to manage deletion errors
+  const [openError, setOpenError] = useState(false); 
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5); 
+  const isSmallScreen = useMediaQuery('(max-width:600px)');
 
   const toggleModal = (id_carte) => {
     setOpen(!open);
@@ -45,7 +77,6 @@ function Badges() {
         setData(jsonData.cartesWithUsers || []);
       } catch (error) {
         console.error('Error fetching data:', error);
-        
       }
     };
 
@@ -66,11 +97,10 @@ function Badges() {
       setData(data.filter(carte => carte.id_carte !== id_carte));
     } catch (error) {
       console.error('Error deleting carte:', error);
-      setOpenError(true); // Open the error snackbar/notification
+      setOpenError(true); 
     }
   };
 
-  // Close the Snackbar
   const handleCloseError = () => {
     setOpenError(false);
   };
@@ -84,21 +114,19 @@ function Badges() {
       field: 'date_expiration', 
       headerName: 'Date d\'expiration', 
       width: 160,
-     
-
     },
     { field: 'propritaire', headerName: 'Propritaire', width: 180 },
     {
       field: 'actions',
       headerName: '',
-      width: 150,
+      width: isSmallScreen ? 100 : 150,
       sortable: false,
       renderCell: (params) => {
         return (
           <div>
             <IconButton 
               onClick={(e) => {
-                e.stopPropagation(); // Prevents row selection
+                e.stopPropagation(); 
                 toggleModal(params.row.id_carte);
               }} 
               sx={{ color: 'green' }}
@@ -107,7 +135,7 @@ function Badges() {
             </IconButton>
             <IconButton 
               onClick={(e) => {
-                e.stopPropagation(); // Prevents row selection
+                e.stopPropagation(); 
                 handleDelete(params.row.id_carte);
               }} 
               sx={{ color: 'red' }}
@@ -137,21 +165,25 @@ function Badges() {
           An error occurred!
         </Alert>
       </Snackbar>
-      <div style={{ height: 400, width: '95%' }}>
-        <div style={{ color: 'SkyBlue' }}>
-          <h1>Liste des badges</h1>
-        </div>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          getRowId={(row) => row.id_carte}
-          checkboxSelection
-          // @ts-ignore
-          components={{
-            Toolbar: GridToolbar,
-          }}
-        />
-      </div>
+      <Grid container justifyContent="center">
+        <Grid item xs={12} md={10}>
+          <Box sx={{ height: 400, width: '100%' }}>
+            <div style={{ color: 'SkyBlue' }}>
+              <h1>Liste des badges</h1>
+            </div>
+            
+            <DataGrid
+              rows={data}
+              columns={columns}
+              getRowId={(row) => row.id_carte}
+              checkboxSelection
+              // @ts-ignore
+              pageSize={pageSize}
+              components={{ Toolbar: () => <GridToolbar><CustomPagination page={page} setPage={setPage} pageSize={pageSize} setPageSize={setPageSize} /></GridToolbar> }}
+            />
+          </Box>
+        </Grid>
+      </Grid>
     </>
   );
 }

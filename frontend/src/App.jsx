@@ -1,19 +1,18 @@
 import * as React from "react";
-import { ThemeProvider, createTheme, styled, useTheme } from "@mui/material/styles";
+import {
+  ThemeProvider,
+  createTheme,
+  styled,
+  useTheme,
+} from "@mui/material/styles";
 import Box from "@mui/material/Box";
-
-
-
 import CssBaseline from "@mui/material/CssBaseline";
+import Typography from "@mui/material/Typography";
 
 import TopBar from "./components/TopBar";
 import SideBar from "./components/SideBar";
 import { getDesignTokens } from "./Theme";
 import { Outlet } from "react-router-dom";
-
-const drawerWidth = 240;
-
-
 
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -24,11 +23,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
-
-
-
 export default function MiniDrawer() {
- 
   const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
@@ -38,21 +33,31 @@ export default function MiniDrawer() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const [mode, setMode] = React.useState( Boolean(localStorage.getItem("currentMode"))?localStorage.getItem("currentMode")   : "dark");
+
+  const [mode, setMode] = React.useState(
+    Boolean(localStorage.getItem("currentMode"))
+      ? localStorage.getItem("currentMode")
+      : "light"
+  );
   const theme = React.useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
+
   return (
     <ThemeProvider theme={theme}>
-    <Box sx={{ display: "flex" }}>
-      <CssBaseline />
-     
-      <TopBar open={open} handleDrawerOpen={handleDrawerOpen} setMode={setMode}  />
-      <SideBar open={open} handleDrawerOpen={handleDrawerOpen} />
-   
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <  DrawerHeader />
-        <Outlet/>  
+      <Box sx={{ display: "flex" }}>
+        <CssBaseline />
+        <TopBar
+          open={open}
+          handleDrawerOpen={handleDrawerOpen}
+          setMode={setMode}
+        />
+
+        <SideBar open={open} handleDrawerClose={handleDrawerClose} />
+
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <DrawerHeader />
+          <Outlet />
+        </Box>
       </Box>
-    </Box>
     </ThemeProvider>
   );
 }

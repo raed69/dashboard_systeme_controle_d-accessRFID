@@ -18,7 +18,7 @@ const carterouter=require('./src/routes/Carte')
 const timezonerouter=require('./src/routes/Timezone')
 const joursrouter=require('./src/routes/Jours')
 const portesettingsrouter=require('./src/routes/Portesettings')
-
+const statusrouter=require('./src/routes/Status')
 const { initialisation_jours } = require('./src/fonctions/FOR_JOURS/init_jours');
 const { Initialisation_notificiation } = require('./src/fonctions/FOR_TYPE_EVENT/init_notif');
 const { initialisation_porte_status } = require('./src/fonctions/FOR_TYPE_EVENT/init_porte_status');
@@ -60,6 +60,13 @@ app.delete('/timezone/:id',timezonerouter)
 
 ////API JOURS ////////
 app.get('/jours',joursrouter)
+
+//////API STATUS//////
+app.get('/stats',statusrouter)
+app.get('/dailyuser',statusrouter)
+app.get('/userparjour',statusrouter)
+app.get('/cartedesa',statusrouter)
+
 
 
 ////API DOOR SETINGS///

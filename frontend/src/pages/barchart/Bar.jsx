@@ -1,136 +1,134 @@
-import React from 'react'
-import { ResponsiveBar } from '@nivo/bar'
-import { Box } from '@mui/material'
-import { Height } from '@mui/icons-material'
-const data = [
-  { country: 'Janvier', 'Nouveaux utilisateurs': 50 },
-  { country: 'Février', 'Nouveaux utilisateurs': 80 },
-  { country: 'Mars', 'Nouveaux utilisateurs': 65 },
-  // Ajoutez d'autres mois avec leurs nombres respectifs d'utilisateurs
-];
+import React, { useEffect, useState } from "react";
+import { ResponsiveBar } from "@nivo/bar";
+import { Box, CircularProgress, Typography, colors, useTheme } from "@mui/material";
+import { transformData } from "./tronsformdat";
+
 function Bar() {
+  const theme = useTheme(); // Access the current theme using useTheme hook
+  const [data, setData] = useState([]);
+  const [keys, setKeys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  function extractKeys(data) {
+    const keys = new Set();
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        if (key !== "statut") keys.add(key);
+      });
+    });
+    return Array.from(keys);
+  }
+
+  useEffect(() => {
+    fetch("http://localhost:5000/stats")
+      .then((response) => response.json())
+      .then((data) => {
+        const transformedData = transformData(data);
+        const keys = extractKeys(transformedData);
+        setData(transformedData);
+        setKeys(keys);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setError(error.toString());
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (data.length === 0) return <Typography>No data available</Typography>;
+
   return (
-    <Box sx={{height:"75vh"}}>
-     <ResponsiveBar
-        data={data}
-        keys={[
-            'hot dog',
-            'burger',
-            'sandwich',
-            'kebab',
-            'fries',
-            'donut'
-        ]}
-        indexBy="country"
-        margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-        padding={0.25}
-        valueScale={{ type: 'linear' }}
-        indexScale={{ type: 'band', round: true }}
-        colors={{ scheme: 'nivo' }}
-        defs={[
-            {
-                id: 'dots',
-                type: 'patternDots',
-                background: 'inherit',
-                color: '#38bcb2',
-                size: 4,
-                padding: 1,
-                stagger: true
-            },
-            {
-                id: 'lines',
-                type: 'patternLines',
-                background: 'inherit',
-                color: '#eed312',
-                rotation: -45,
-                lineWidth: 6,
-                spacing: 10
-            }
-        ]}
-        fill={[
-            {
-                match: {
-                    id: 'fries'
+    <Box sx={{ height: "75vh", width: "90%", position: "relative" }}>
+      <div style={{ width: "90%", height: "100%" }}>
+        <div
+          style={{
+            color: "white",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "10vh",
+          }}
+        >
+          <h1>les badges utiliser selon leurs status</h1>
+        </div>
+
+        <ResponsiveBar
+          data={data}
+          theme={{
+            axis:{
+              domain:{
+                line:{
+                  stroke:colors.grey[100],
                 },
-                id: 'dots'
-            },
-            {
-                match: {
-                    id: 'sandwich'
+              },
+              legend:{
+                text:{
+                  fill:colors.grey[100]
                 },
-                id: 'lines'
+              },
+              ticks:{
+                line:{
+                  stroke: colors.grey[100],
+                  strokeWidth:1,
+                },
+                text:{
+                  fill:colors.grey[100]
+                }
+              },
+              
+
             }
-        ]}
-        borderColor={{
-            from: 'color',
-            modifiers: [
-                [
-                    'darker',
-                    1.6
-                ]
-            ]
-        }}
-        axisTop={null}
-        axisRight={null}
-        axisBottom={{
-            tickSize: 5,
-            tickPadding: 5,
+          }}
+          keys={keys}
+          indexBy="statut"
+          margin={{ top: 50, right: 80, bottom: 50, left: 90 }}
+          padding={0.3}
+          colors={{ scheme: "dark2" }}
+          borderColor={{ from: "color", modifiers: [["darker", 100]] }}
+          axisTop={null}
+          axisRight={null}
+          axisBottom={{
+            tickSize: 10,
+            tickPadding: 10,
             tickRotation: 0,
-            legend: 'country',
-            legendPosition: 'middle',
-            legendOffset: 32,
-            truncateTickAt: 0
-        }}
-        axisLeft={{
+            legend: "Status",
+            legendPosition: "middle",
+            legendOffset: 45,
+            // @ts-ignore
+            tickFontFamily: theme.typography.fontFamily, // Use theme font family
+            tickFontSize: theme.typography.body1.fontSize, // Use theme body1 font size
+            tickTextColor: theme.palette.text.primary, // Use theme primary text color
+          }}
+          axisLeft={{
             tickSize: 5,
-            tickPadding: 5,
+            tickPadding: 10,
             tickRotation: 0,
-            legend: 'food',
-            legendPosition: 'middle',
-            legendOffset: -40,
-            truncateTickAt: 0
-        }}
-        labelSkipWidth={12}
-        labelSkipHeight={12}
-        labelTextColor={{
-            from: 'color',
-            modifiers: [
-                [
-                    'darker',
-                    1.6
-                ]
-            ]
-        }}
-        legends={[
-            {
-                dataFrom: 'keys',
-                anchor: 'bottom-right',
-                direction: 'column',
-                justify: false,
-                translateX: 120,
-                translateY: 0,
-                itemsSpacing: 2,
-                itemWidth: 100,
-                itemHeight: 20,
-                itemDirection: 'left-to-right',
-                itemOpacity: 0.85,
-                symbolSize: 20,
-                effects: [
-                    {
-                        on: 'hover',
-                        style: {
-                            itemOpacity: 1
-                        }
-                    }
-                ]
-            }
-        ]}
-        role="application"
-        ariaLabel="Nivo bar chart demo"
-        barAriaLabel={e=>e.id+": "+e.formattedValue+" in country: "+e.indexValue}
-    />
+            legend: "Count",
+            legendPosition: "middle",
+            legendOffset: -70,
+            // @ts-ignore
+            tickFontFamily: theme.typography.fontFamily, // Use theme font family
+            tickFontSize: theme.typography.body1.fontSize, // Use theme body1 font size
+            tickTextColor: theme.palette.text.primary, // Use theme primary text color
+          }}
+          labelSkipWidth={18}
+          labelSkipHeight={12}
+          labelTextColor={theme.palette.text.primary} // Use theme primary text color
+        />
+      </div>
+      <style>
+        {`
+          .nivo-axis text {
+            fill: white;
+          }
+        `}
+      </style>
     </Box>
-  )
+  );
 }
 
-export default Bar
+export default Bar;
