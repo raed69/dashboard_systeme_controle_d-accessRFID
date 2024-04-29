@@ -19,12 +19,15 @@ const timezonerouter=require('./src/routes/Timezone')
 const joursrouter=require('./src/routes/Jours')
 const portesettingsrouter=require('./src/routes/Portesettings')
 const statusrouter=require('./src/routes/Status')
+const evenementrouter=require('./src/routes/Evenement')
 const { initialisation_jours } = require('./src/fonctions/FOR_JOURS/init_jours');
 const { Initialisation_notificiation } = require('./src/fonctions/FOR_TYPE_EVENT/init_notif');
 const { initialisation_porte_status } = require('./src/fonctions/FOR_TYPE_EVENT/init_porte_status');
 const { initialisation_remarque } = require('./src/fonctions/FOR_TYPE_EVENT/init_remarque');
 const { insertInitialCards } = require('./src/fonctions/FOR_Carte/produire200badges');
+const { init_typ_event } = require('./src/fonctions/FOR_TYPE_EVENT/init_table_type_event');
 const brokerUri = require('./src/service broker/brokerConfig');
+const { SubscribeEventDatafrombroker } = require('./src/service broker/subcribe/clientEvent');
 
 
 
@@ -73,7 +76,8 @@ app.get('/cartedesa',statusrouter)
 app.post('/portesettings',portesettingsrouter)
 app.patch('/portesettings/:id',portesettingsrouter)
 
-
+///API EVENTS////
+app.get('/events',evenementrouter)
 
 
 
@@ -81,7 +85,7 @@ app.patch('/portesettings/:id',portesettingsrouter)
 
 ////connecter au broker
 const client = mqtt.connect(brokerUri);
-
+SubscribeEventDatafrombroker()
 
 // Sync the database and start the server
 sequelize.sync()   
@@ -101,3 +105,4 @@ initialisation_jours()
 Initialisation_notificiation()
 initialisation_porte_status()
 initialisation_remarque()
+init_typ_event()

@@ -12,7 +12,7 @@ const Evenement = sequelize.define('Evenement', {
         type: DataTypes.ENUM('entrer', 'sortie')
     },
     access: {
-        type: DataTypes.ENUM('SANS CARTE', 'AVEC CARTE')
+        type: DataTypes.ENUM('sans carte', 'avec carte')
     },
     date_access: {
         type: DataTypes.DATE

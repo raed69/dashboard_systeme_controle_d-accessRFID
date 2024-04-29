@@ -1,27 +1,27 @@
-const { Op, literal, fn, where } = require("sequelize");
+const { Op, literal, fn, } = require("sequelize");
 const Carte = require("../models/Carte");
 const User = require("../models/User");
 
 
 const show_carte_type = async (req, res, next) => {
     try {
-        // Rechercher les cartes associées à des utilisateurs et ayant un fuseau horaire
+        
         const cartesWithUsers = await Carte.findAll({
             where: {
                 id_user: { [Op.not]: null },
-                id_timezone: { [Op.not]: null }
+                id_timezone: { [Op.not]: null } 
             }
         });
 
-        // Vérifier s'il y a des cartes avec des utilisateurs associés
+        
         if (cartesWithUsers.length === 0) {
             return res.status(400).json({ message: "Désolé, aucune carte associée à un utilisateur !" });
         }
 
         // Obtenir le nombre de chaque type de statut de carte
         const carteTypeCounts = await Carte.count({
-            attributes: ['statut'], // Sélectionner le champ de statut
-            group: ['statut'] // Regrouper par statut
+            attributes: ['statut'], 
+            group: ['statut'] 
         },{where:{id_user: { [Op.not]: null }}});
 
         res.status(200).json({ carteTypeCounts });
