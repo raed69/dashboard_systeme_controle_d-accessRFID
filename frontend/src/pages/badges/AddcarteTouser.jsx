@@ -45,10 +45,10 @@ function AddCarteToUser() {
           const data = await response.json();
           console.log("Data from fetchUserCarte:", data); // Ajoutez ce point de contrôle pour vérifier la réponse de l'API
           setIdCarte(data.id_carte_last_user || ""); // Mise à jour pour utiliser la clé correcte
-          setStatut(data.statut || "active");
-          setDateExpiration(data.date_expiration || null);
-          setNombreMaxEntree(data.nombre_max_entree || "");
-          setTimezone(data.id_timezone || "");
+          setStatut("active");
+          setDateExpiration( null);
+          setNombreMaxEntree( "");
+          setTimezone( "");
         } else {
           console.error("Failed to fetch user carte");
         }
@@ -140,7 +140,7 @@ function AddCarteToUser() {
             <MenuItem value="active">Actif</MenuItem>
             <MenuItem value="desactive">Désactivé</MenuItem>
             <MenuItem value="vip">VIP</MenuItem>
-            <MenuItem value="blacklist">Liste noire</MenuItem>
+            <MenuItem value="blackliste">Liste noire</MenuItem>
           </Select>
 
           <TextField

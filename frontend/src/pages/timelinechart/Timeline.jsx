@@ -29,10 +29,10 @@ function Timeline() {
     }, []);
 
     return (
-        <div style={{ height: '74vh', position: 'relative' }}>
+        <div style={{ height: '30vh', position: 'relative' }}>
             
             <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            <Typography variant="h5" sx={{ marginBottom: 2, color: colors.grey[200], textAlign: 'center' }}>User par Jour</Typography>
+           
                 {loading && (
                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
                         <CircularProgress color="primary" />

@@ -144,9 +144,7 @@ const TopBar = ({ open, handleDrawerOpen, setMode }) => {
             <NotificationsOutlinedIcon />
           </IconButton>
 
-          <IconButton color="inherit">
-            <SettingsOutlinedIcon />
-          </IconButton>
+       
 
         
         </Stack>

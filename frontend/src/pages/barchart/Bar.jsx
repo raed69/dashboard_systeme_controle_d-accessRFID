@@ -26,6 +26,7 @@ function Bar() {
       .then((data) => {
         const transformedData = transformData(data);
         const keys = extractKeys(transformedData);
+        console.log(data)
         setData(transformedData);
         setKeys(keys);
         setLoading(false);
@@ -42,19 +43,9 @@ function Bar() {
   if (data.length === 0) return <Typography>No data available</Typography>;
 
   return (
-    <Box sx={{ height: "75vh", width: "90%", position: "relative" }}>
-      <div style={{ width: "90%", height: "100%" }}>
-        <div
-          style={{
-            color: "white",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "10vh",
-          }}
-        >
-          <h1>les badges utiliser selon leurs status</h1>
-        </div>
+    <Box sx={{ height: "60vh", width: "90%", position: "relative" }}>
+      <div style={{ width: "90%", height: "90%" }}>
+   
 
         <ResponsiveBar
           data={data}

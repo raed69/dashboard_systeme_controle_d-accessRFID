@@ -4,15 +4,26 @@ import axios from 'axios';
 
 const Container = styled.div`
   margin: 20px;
+  display: flex;
+  justify-content: center; // Centre horizontalement
+  align-items: center; // Centre verticalement
+  min-height: 50vh; 
+`;
+const InnerContainer = styled.div`
+  padding: 50px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+ ;
 `;
 
 const Title = styled.h1`
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 50px;
+
 `;
 
 const Form = styled.form`
-  margin-bottom: 20px;
+  margin-bottom: 55px;
 `;
 
 const FormGroup = styled.div`
@@ -45,6 +56,12 @@ const Button = styled.button`
   &:hover {
     background-color: #0056b3;
   }
+`;
+const ScheduleButtonGroup = styled.div`
+  display: flex; // Aligne les boutons horizontalement
+  justify-content: flex-end; // Aligne les boutons à l'extrême droite du conteneur
+  gap: 10px; // Espace entre les boutons
+  margin-top: 20px; // Ajoute de la marge au-dessus pour espacer les boutons
 `;
 
 const SuccessButton = styled(Button)`
@@ -189,6 +206,9 @@ const App = () => {
 
       // Handle success
       setSuccessMessage('Timezone configuration saved successfully!');
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500)
       setErrorMessage('');
 
     } catch (error) {
@@ -205,79 +225,88 @@ const App = () => {
   };
 
   return (
-    <Container>
-      <Title>Timezone Configuration</Title>
-      {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
-      {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
-      <Form onSubmit={handleSubmit}>
-        <FormGroup>
-          <FormLabel>Timezone Name:</FormLabel>
-          <FormInput type="text" placeholder="Enter timezone" value={timezone} onChange={handleTimezoneChange} />
-        </FormGroup>
+       
+     <Container>
+       <InnerContainer>
 
-        {scheduledTimes.map((schedule, index) => (
-          <ScheduleContainer key={index}>
-            <DaysContainer>
-              {Object.entries(schedule.jours).map(([dayKey, dayValue]) => (
-                <DayLabel key={dayKey}>
-                  <input
-                    type="checkbox"
-                    checked={dayValue}
-                    onChange={() => {
-                      const updatedDays = { ...schedule.jours, [dayKey]: !schedule.jours[dayKey] };
-                      handleDayChange(index, updatedDays);
-                    }}
-                  />
-                  {dayKey}
-                </DayLabel>
-              ))}
-            </DaysContainer>
-            <TimeContainer>
-              {schedule.timeslot.map((time, timeIndex) => (
-                <TimeRange
-                  key={timeIndex}
-                  index={timeIndex}
-                  time={time}
-                  onTimeChange={(subIndex, updatedTime) => {
-                    const updatedTimes = [...schedule.timeslot];
-                    updatedTimes[subIndex] = updatedTime;
-                    handleTimeChange(index, updatedTimes);
-                  }}
-                />
-              ))}
-              <AddTimeButton type="button" onClick={() => handleAddTime(index)}>Add Time</AddTimeButton>
-              <RemoveButton type="button" onClick={() => handleRemoveSchedule(index)}>Remove Schedule</RemoveButton>
-            </TimeContainer>
-          </ScheduleContainer>
-        ))}
-        <Button type="submit">Save</Button>
-      </Form>
-      <SuccessButton onClick={handleAddSchedule}>Add Schedule</SuccessButton>
-    </Container>
-  );
+     <Title>Configuration du Fuseau Horaire</Title>
+       {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
+       {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+       <Form onSubmit={handleSubmit}>
+         <FormGroup>
+           <FormLabel>Timezone Name:</FormLabel>
+           <FormInput type="text" placeholder="Enter timezone" value={timezone} onChange={handleTimezoneChange} />
+         </FormGroup>
+ 
+         {scheduledTimes.map((schedule, index) => (
+           <ScheduleContainer key={index}>
+             <DaysContainer>
+               {Object.entries(schedule.jours).map(([dayKey, dayValue]) => (
+                 <DayLabel key={dayKey}>
+                   <input
+                     type="checkbox"
+                     checked={dayValue}
+                     onChange={() => {
+                       const updatedDays = { ...schedule.jours, [dayKey]: !schedule.jours[dayKey] };
+                       handleDayChange(index, updatedDays);
+                     }}
+                   />
+                   {dayKey}
+                 </DayLabel>
+               ))}
+             </DaysContainer>
+             <TimeContainer>
+               {schedule.timeslot.map((time, timeIndex) => (
+                 <TimeRange
+                   key={timeIndex}
+                   index={timeIndex}
+                   time={time}
+                   onTimeChange={(subIndex, updatedTime) => {
+                     const updatedTimes = [...schedule.timeslot];
+                     updatedTimes[subIndex] = updatedTime;
+                     handleTimeChange(index, updatedTimes);
+                   }}
+                 />
+               ))}
+
+               <AddTimeButton type="button" onClick={() => handleAddTime(index)}>Add Time</AddTimeButton>
+               <RemoveButton type="button" onClick={() => handleRemoveSchedule(index)}>Remove Schedule</RemoveButton>
+
+
+             </TimeContainer>
+           </ScheduleContainer>
+         ))}
+         <Button type="submit">Save</Button>
+       </Form>
+       <SuccessButton onClick={handleAddSchedule}>Add Schedule</SuccessButton>
+       </InnerContainer>
+     </Container>
+   );
+ };
+ 
+ const TimeRange = ({ index, time, onTimeChange }) => {
+   const handleTimeChange = (field, value) => {
+     onTimeChange(index, { ...time, [field]: value });
+   };
+   
+   return (
+     <TimeRangeWrapper>
+       <FormLabel>Start Time:</FormLabel>
+       <TimeRangeInput
+         type="time"
+         value={time.heure_entree}
+         onChange={(e) => handleTimeChange('heure_entree', e.target.value)}
+         />
+       <FormLabel>End Time:</FormLabel>
+       <TimeRangeInput
+         type="time"
+         value={time.heure_sortie}
+         onChange={(e) => handleTimeChange('heure_sortie', e.target.value)}
+         />
+     </TimeRangeWrapper>
+   );
+      
 };
-
-const TimeRange = ({ index, time, onTimeChange }) => {
-  const handleTimeChange = (field, value) => {
-    onTimeChange(index, { ...time, [field]: value });
-  };
-
-  return (
-    <TimeRangeWrapper>
-      <FormLabel>Start Time:</FormLabel>
-      <TimeRangeInput
-        type="time"
-        value={time.heure_entree}
-        onChange={(e) => handleTimeChange('heure_entree', e.target.value)}
-      />
-      <FormLabel>End Time:</FormLabel>
-      <TimeRangeInput
-        type="time"
-        value={time.heure_sortie}
-        onChange={(e) => handleTimeChange('heure_sortie', e.target.value)}
-      />
-    </TimeRangeWrapper>
-  );
-};
+  
 
 export default App;

@@ -57,7 +57,7 @@ function Badges() {
   const [selectedCarteId, setSelectedCarteId] = useState(null);
   const [open, setOpen] = useState(false);
   const [openError, setOpenError] = useState(false); 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5); 
   const isSmallScreen = useMediaQuery('(max-width:600px)');
 

@@ -43,14 +43,14 @@ export default function MiniDrawer() {
 
   return (
     <ThemeProvider theme={theme}>
+    
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <TopBar
           open={open}
           handleDrawerOpen={handleDrawerOpen}
           setMode={setMode}
-        />
-
+          />
         <SideBar open={open} handleDrawerClose={handleDrawerClose} />
 
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>

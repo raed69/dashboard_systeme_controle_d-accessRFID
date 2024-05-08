@@ -22,11 +22,11 @@ import Badges from './pages/badges/Badges';
 import Timezone from './pages/timezones/Timezone';
 import Evenements from './pages/evenements/Evenements';
 import Bar from './pages/barchart/Bar';
-import Pie from './pages/piechart/Pie';
 import Timeline from './pages/timelinechart/Timeline';
 import Door from './pages/doorsettings/Door';
 import AddUser from './pages/users/AddUser';
 import AddcarteTouser from './pages/badges/AddcarteTouser';
+import Piechart from './pages/piechart/Piechart';
 
 
 
@@ -45,7 +45,7 @@ const router = createBrowserRouter(
            <Route path='timezone' element={<Timezone/>} />
            <Route path='evenement' element={<Evenements/>} />
            <Route path='bar' element={<Bar/>} />
-           <Route path='pie' element={<Pie/>} />
+           <Route path='pie' element= {<Piechart/>}/>
            <Route path='timeline' element={<Timeline/>} />
            <Route path='door' element={<Door/>} />
         </Route>
