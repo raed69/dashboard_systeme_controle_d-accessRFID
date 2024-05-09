@@ -6,29 +6,22 @@ const brokerUri = require("../brokerConfig");
 // Create MQTT client instance
 const client = mqtt.connect(brokerUri);
 
-const publishCardDataToBroker = async (carteData,jourTimeslots) => {
+// Define the function to publish card data to the MQTT broker
+const publishCardDataToBroker = async (carteData) => {
     try {
-        client.on('connect', () => {
-            console.log('Connexion au broker MQTT établie');
-            const dataToSend = {
-                carte: carteData,
-                jourTimeslots: jourTimeslots
-            };
-            client.publish('topic/carte', JSON.stringify(dataToSend), (err) => {
-                if (err) {
-                    console.error('Erreur lors de la publication des données de la carte :', err);
-                } else {
-                    console.log('Données de la carte publiées avec succès');
-                    client.end(); // Fermeture de la connexion MQTT
-                }
-            });
-        });
-
-        client.on('error', (err) => {
-            console.error('Erreur de connexion au broker MQTT :', err);
+        const dataToSend = {
+            carte: carteData,
+            
+        };;
+        client.publish('topic/carte', JSON.stringify(dataToSend), (err) => {
+            if (err) {
+                console.error('Error publishing card data:', err);
+            } else {
+                console.log('Card data published successfully');
+            }
         });
     } catch (error) {
-        console.error('Erreur lors de la publication des données de la carte vers le broker MQTT:', error);
+        console.error('Error publishing card data:', error);
     }
 };
 

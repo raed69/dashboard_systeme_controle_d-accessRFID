@@ -44,8 +44,7 @@ const Carte = sequelize.define('Carte', {
     timestamps: false // Désactive les timestamps
 });
 
-Carte.hasOne(Evenement, {
-    foreignKey: 'id_carte'
-});
+Carte.hasMany(Evenement, { foreignKey: 'id_carte' }); // Carte a de nombreux événements
+Evenement.belongsTo(Carte, { foreignKey: 'id_carte' });
 
 module.exports = Carte;

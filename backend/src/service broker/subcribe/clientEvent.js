@@ -21,6 +21,13 @@ const SubscribeEventDatafrombroker = async () => {
         }
       });
     });
+///////////validation////////////////////
+
+
+
+
+
+
 
     // Handle incoming messages on the subscribed topic
     client.on("message", async (topic, message) => {
@@ -34,7 +41,7 @@ const SubscribeEventDatafrombroker = async () => {
             flux: eventData.flux,
             access: eventData.access,
             date_access: eventData.date_access,
-            carte_existnace: eventData.carte_existnace,
+            carte_existence: eventData.carte_existence,
             id_carte: eventData.id_carte,
             id_typeevent:eventData.id_typeevent
           });

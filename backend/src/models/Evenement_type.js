@@ -9,7 +9,7 @@ const EvenementType = sequelize.define('EvenementType', {
     id_typeevent: {
         primaryKey: true,
         type: DataTypes.SMALLINT,
-        autoIncrement:true
+        autoIncrement:false
     },
 }, {
     timestamps: false // Excluding timestamps

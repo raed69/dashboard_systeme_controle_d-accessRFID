@@ -60,6 +60,7 @@ const creer_user_avec_sa_carte = async (req, res, next) => {
     }
 };
 ///////////////////////////////////////////////////
+
 const Update_user_carte = async (req, res, next) => {
     try {
         const { statut,nombre_max_entree,date_expiration,id_timezone} = req.body;
@@ -85,42 +86,9 @@ const Update_user_carte = async (req, res, next) => {
         const updatedCardData = await Carte.findOne({ where: { id_user: lastcreated_user.id_user } });
         
         
-        const jourTimeslots = await Timezone_Jours_Timeslot.findAll({
-            where: { id_timezone: updatedCardData.id_timezone },
-            include: [
-              {
-                model: Jours_Timeslot,
-                include: [
-                  {
-                    model: Jours,
-                    attributes: ['nom_jours'] // Exclure l'ID de Jours
-                  },
-                  {
-                    model: Timeslot,
-                    attributes: ['heure_entree', 'heure_sortie'] // Exclure l'ID de Timeslot
-                  }
-                ],
-                attributes: ['JourIdJours'] // Exclure l'ID de jourTimeslot
-              }
-            ],
-            attributes: [] // Exclure tous les attributs de Timezone_Jours_Timeslot
-          });
-      
-          if (!jourTimeslots.length) {
-            return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
-          }
-      
-          // Transform and flatten the structure for easier use
-          const formattedDetails = jourTimeslots.map(slot => ({
-            jour: slot.Jours_Timeslot.Jour.nom_jours,
-            heures: {
-                entree: slot.Jours_Timeslot.Timeslot.heure_entree,
-                sortie: slot.Jours_Timeslot.Timeslot.heure_sortie
-            }
-          }));
 
         // Publish to MQTT broker
-        await publishCardDataToBroker(updatedCardData, formattedDetails);
+        await publishCardDataToBroker(updatedCardData);
         
       
             return res.status(200).json({ message: "Les informations de la carte utilisateur ont été mises à jour avec succès" });

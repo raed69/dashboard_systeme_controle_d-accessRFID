@@ -9,7 +9,7 @@ const Evenement = sequelize.define('Evenement', {
         autoIncrement: true,
     },
     flux: {
-        type: DataTypes.ENUM('entrer', 'sortie')
+        type: DataTypes.ENUM('entree', 'sortie')
     },
     access: {
         type: DataTypes.ENUM('sans carte', 'avec carte')
@@ -17,7 +17,7 @@ const Evenement = sequelize.define('Evenement', {
     date_access: {
         type: DataTypes.DATE
     },
-    carte_existnace: {
+    carte_existence: {
         type: DataTypes.BOOLEAN,
         defaultValue: true, // Fixed typo in the default value property name
     }

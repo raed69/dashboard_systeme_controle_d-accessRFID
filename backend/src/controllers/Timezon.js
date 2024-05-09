@@ -5,68 +5,107 @@ const Jours_Timeslot = require('../models/Jours_Timeslot');
 const sequelize = require('../configDatabase/database');
 const Timezone_Jours_Timeslot = require('../models/Timezone_jours_timeslot');
 const { Op } = require('sequelize');
+const {publishTimezoneDataToBroker} = require('../service broker/publish/clientTimezone');
 
 const creer_timezone = async (req, res) => {
   try {
-      const timezoneData = req.body;
+    const timezoneData = req.body;
 
-      // Validate timezoneData
-      if (!Array.isArray(timezoneData) || timezoneData.length === 0) {
-          throw new Error('Invalid or empty timezone data');
-      }
+    // Validate timezoneData
+    if (!Array.isArray(timezoneData) || timezoneData.length === 0) {
+      return res.status(400).json({ error: 'Invalid or empty timezone data' });
+    }
 
-      const timezoneName = timezoneData[0].nom;
+    const timezoneName = timezoneData[0].nom;
 
-      if (!timezoneName) {
-          throw new Error('Timezone name is missing in the first element.');
-      }
+    if (!timezoneName) {
+      return res.status(400).json({ error: 'Timezone name is missing in the first element.' });
+    }
 
-      // Create or find the timezone using the name from the first element
-      let [timezone] = await Timezone.findOrCreate({
-          where: { nom: timezoneName }
-      });
+    // Create or find the timezone using the name from the first element
+    const [timezone] = await Timezone.findOrCreate({
+      where: { nom: timezoneName },
+    });
 
-      // Iterate through the timeslots of each timezone configuration
-      for (const timezoneConfig of timezoneData) {
-          for (const timeSlot of timezoneConfig.timeslot) { // Changed from `times` to `timeslot`
-              // Find or create timeslot
-              let [createdTimeslot] = await Timeslot.findOrCreate({
-                  where: { heure_entree: timeSlot.heure_entree, heure_sortie: timeSlot.heure_sortie }
+    // Iterate through the timeslots of each timezone configuration
+    for (const timezoneConfig of timezoneData) {
+      for (const timeSlot of timezoneConfig.timeslot) {
+        // Find or create timeslot
+        const [createdTimeslot] = await Timeslot.findOrCreate({
+          where: { heure_entree: timeSlot.heure_entree, heure_sortie: timeSlot.heure_sortie },
+        });
+
+        // Add associations with jour to the JourTimeslot model
+        for (const day of timezoneConfig.jours) {
+          const jourName = Object.keys(day)[0];
+          if (day[jourName]) {
+            const jourObject = await Jours.findOne({ where: { nom_jours: jourName } });
+            if (jourObject && createdTimeslot) {
+              const [jourTimeslot] = await Jours_Timeslot.findOrCreate({
+                where: {
+                  JourIdJours: jourObject.id_jours,
+                  TimeslotIdTimeslot: createdTimeslot.id_timeslot,
+                },
               });
 
-              // Add associations with jour to the JourTimeslot model
-              for (const day of timezoneConfig.jours) { // Changed from `days` to `jours`
-                  const jour = Object.keys(day)[0];
-                  if (day[jour]) {
-                      const jourObject = await Jours.findOne({ where: { nom_jours: jour } });
-                      if (jourObject && createdTimeslot) {
-                          let [jourTimeslot] = await Jours_Timeslot.findOrCreate({
-                              where: {
-                                  JourIdJours: jourObject.id_jours,
-                                  TimeslotIdTimeslot: createdTimeslot.id_timeslot,
-                              }
-                          });
-
-                          // Create entry in TimezoneJourTimeslot if JourTimeslot exists
-                          if (jourTimeslot) {
-                              await Timezone_Jours_Timeslot.findOrCreate({
-                                  where: {
-                                    id_jour_timeslot: jourTimeslot.id_jour_timeslot,
-                                    id_timezone: timezone.id_timezone,   
-                                  }
-                              });
-                          }
-                      }
-                  }
+              // Create entry in Timezone_Jours_Timeslot if JourTimeslot exists
+              if (jourTimeslot) {
+                await Timezone_Jours_Timeslot.findOrCreate({
+                  where: {
+                    id_jour_timeslot: jourTimeslot.id_jour_timeslot,
+                    id_timezone: timezone.id_timezone,
+                  },
+                });
               }
+            }
           }
+        }
       }
+    }
 
-      console.log('Timezone data registered successfully.');
-      res.status(201).json({ message: 'Timezone data registered successfully.' });
+    const jourTimeslots = await Timezone_Jours_Timeslot.findAll({
+      where: { id_timezone: timezone.id_timezone },
+      include: [
+        {
+          model: Jours_Timeslot,
+          include: [
+            { model: Jours, attributes: ['nom_jours'] },
+            { model: Timeslot, attributes: ['heure_entree', 'heure_sortie'] },
+          ],
+        },
+      ],
+    });
+
+    if (!jourTimeslots.length) {
+      return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
+    }
+
+    // Format the details
+    const formattedDetails = jourTimeslots.map(slot => ({
+      jour: slot.Jours_Timeslot.Jour.nom_jours,
+      heures: {
+        entree: slot.Jours_Timeslot.Timeslot.heure_entree,
+        sortie: slot.Jours_Timeslot.Timeslot.heure_sortie,
+      },
+    }));
+
+    const dataToPublish = {
+      timezone_id: timezone.id_timezone, // Corrected variable
+      details: formattedDetails,
+    };
+
+    console.log(dataToPublish);
+
+    // Publish the data to broker
+    await publishTimezoneDataToBroker(dataToPublish);
+
+    console.log("Timezone saved successfully in database");
+    return res.status(200).json({
+      message: "Les informations du timezone ont été créées et mises à jour avec succès",
+    });
   } catch (error) {
-      console.error('Error registering timezone data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error registering timezone data:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -163,6 +202,7 @@ const mettre_a_jour_timezone = async (req, res, next) => {
         return res.status(404).json({ message: 'Timezone non trouvée.' });
       }
       await timezoneToUpdate.update({ nom });
+      await publishTimezoneDataToBroker(formattedDetails);
       return res.status(200).json({ message: 'Timezone mise à jour avec succès.', timezone: timezoneToUpdate });
     } catch (error) {
       console.log('Erreur lors de la mise à jour de la timezone :', error);

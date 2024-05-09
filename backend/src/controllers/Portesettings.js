@@ -1,4 +1,5 @@
 const Portesettings = require("../models/Portesetings")
+const { publishPortesettingsToBroker } = require("../service broker/publish/clientPorteste")
 
 const Create_door_settings= async(req,res,next)=>{
     try {
@@ -7,6 +8,7 @@ const Create_door_settings= async(req,res,next)=>{
         door_lock_timeout,
         door_open_timeout
      })   
+     await publishPortesettingsToBroker(newPorteparams)
    res.status(200).json({newPorteparams})        
     } catch (error) {
         console.log(error)
@@ -26,6 +28,7 @@ const Edit_door_settings=async(req,res,next)=>{
             door_lock_timeout,
             door_open_timeout
         })
+        await publishPortesettingsToBroker(newPorteparams)
         res.status(200).json({message:"Porte Settings a ete modifier !"})
     } catch (error) {
         console.log(error)

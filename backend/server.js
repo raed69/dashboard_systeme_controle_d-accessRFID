@@ -69,6 +69,13 @@ app.get('/stats',statusrouter)
 app.get('/dailyuser',statusrouter)
 app.get('/userparjour',statusrouter)
 app.get('/cartedesa',statusrouter)
+app.get('/dailyevent',statusrouter)
+app.get('/dailyacceptedevents',statusrouter)
+app.get('/warning',statusrouter)
+app.get('/erreur',statusrouter)
+app.get('/accepted',statusrouter)
+app.get('/danger',statusrouter)
+
 
 
 
