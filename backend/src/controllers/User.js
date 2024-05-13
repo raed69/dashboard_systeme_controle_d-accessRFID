@@ -61,45 +61,70 @@ const creer_user_avec_sa_carte = async (req, res, next) => {
 };
 ///////////////////////////////////////////////////
 
+
 const Update_user_carte = async (req, res, next) => {
     try {
-        const { statut,nombre_max_entree,date_expiration,id_timezone} = req.body;
-        
-        const id_last_user = await User.max('id_user');
-        const lastcreated_user = await User.findOne({ where: { id_user: id_last_user } });
-        const nom_last_user= lastcreated_user.nom
-        const prenom_last_user=lastcreated_user.prenom
-        if (!lastcreated_user) {
-            return res.status(500).json({ message: "Aucun utilisateur n'existe avec cet ID" });
-        }
-
-      const updated_carte=  await Carte.update({
-            statut,
-            nombre_max_entree,
-            date_expiration,
-            id_timezone,
-            propritaire:nom_last_user + ' ' + prenom_last_user
-        }, {
-            where: { id_user: lastcreated_user.id_user }
-        });
+      const { statut, nombre_max_entree, date_expiration, id_timezone } = req.body;
+  
+      // Vérifiez si le dernier utilisateur existe
+      const id_last_user = await User.max('id_user');
+      const lastcreated_user = await User.findOne({ where: { id_user: id_last_user } });
+  
+      if (!lastcreated_user) {
+        console.log("Aucun utilisateur trouvé avec cet ID");
+        return res.status(404).json({ message: "Aucun utilisateur n'existe avec cet ID" });
+      }
+  
+      console.log("Utilisateur trouvé:", lastcreated_user);
+  
+      // Préparer les données de mise à jour
+      const nom_last_user = lastcreated_user.nom;
+      const prenom_last_user = lastcreated_user.prenom;
+  
+      let updateData = {
+        statut,
+        nombre_max_entree,
+        date_expiration,
+        id_timezone,
+        propritaire: `${nom_last_user} ${prenom_last_user}`
+      };
+  
       
-        const updatedCardData = await Carte.findOne({ where: { id_user: lastcreated_user.id_user } });
-        
-        
-
-        // Publish to MQTT broker
-        await publishCardDataToBroker(updatedCardData);
-        
-      
-            return res.status(200).json({ message: "Les informations de la carte utilisateur ont été mises à jour avec succès" });
-     
-        
+      const statut_selectee = statut.toLowerCase(); // Utilisez `toLowerCase` pour éviter les problèmes de casse
+  
+      if (statut_selectee === 'vip') {
+        console.log("Statut VIP sélectionné");
+        updateData.nombre_max_entree = 999999999; // Assurez-vous que cela a un sens dans votre contexte
+       
+      } else if (statut_selectee === 'blackliste') {
+        console.log("Statut Blackliste sélectionné");
+       
+      }
+  
+      // Mettre à jour la carte
+      const updateResult = await Carte.update(updateData, { where: { id_user: lastcreated_user.id_user } });
+  
+      // Vérifier si la mise à jour a réussi
+      if (updateResult[0] === 0) {
+        console.log("Aucune ligne mise à jour");
+        return res.status(404).json({ message: "Aucune carte trouvée pour cet utilisateur." });
+      }
+  
+      // Récupérer la carte mise à jour
+      const updatedCardData = await Carte.findOne({ where: { id_user: lastcreated_user.id_user } });
+  
+      // Publier les données de la carte mise à jour
+      await publishCardDataToBroker(updatedCardData);
+  
+      return res.status(200).json({ message: "Les informations de la carte utilisateur ont été mises à jour avec succès." });
+  
     } catch (error) {
-        console.error('Error updating user carte:', error);
-        return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des informations de la carte utilisateur" });
+      console.error("Erreur lors de la mise à jour de la carte utilisateur:", error);
+      return res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour des informations de la carte utilisateur." });
     }
-}
-
+  };
+  
+  
 //////////////////////////////////////////////////
 
 const Addothercartetouser = async (req, res, next) => {
@@ -124,43 +149,9 @@ const Addothercartetouser = async (req, res, next) => {
         const updatedCardData = await Carte.findOne({ where: { id_carte: carteAddedToUser.id_carte } });
         
         
-        const jourTimeslots = await Timezone_Jours_Timeslot.findAll({
-            where: { id_timezone: updatedCardData.id_timezone },
-            include: [
-              {
-                model: Jours_Timeslot,
-                include: [
-                  {
-                    model: Jours,
-                    attributes: ['nom_jours'] // Exclure l'ID de Jours
-                  },
-                  {
-                    model: Timeslot,
-                    attributes: ['heure_entree', 'heure_sortie'] // Exclure l'ID de Timeslot
-                  }
-                ],
-                attributes: ['JourIdJours'] // Exclure l'ID de jourTimeslot
-              }
-            ],
-            attributes: [] // Exclure tous les attributs de Timezone_Jours_Timeslot
-          });
-      
-          if (!jourTimeslots.length) {
-            return res.status(404).json({ message: "Aucun détail trouvé pour cette timezone." });
-          }
-      
-          // Transform and flatten the structure for easier use
-          const formattedDetails = jourTimeslots.map(slot => ({
-            dayofweek: slot.Jours_Timeslot.Jour.nom_jours,
-            heures: {
-                entry_time: slot.Jours_Timeslot.Timeslot.heure_entree,
-                exit_time: slot.Jours_Timeslot.Timeslot.heure_sortie
-            }
-          }));
-
-        // Publish to MQTT broker
-        await publishCardDataToBroker(updatedCardData, formattedDetails);
-       
+        await publishCardDataToBroker(updatedCardData);
+        
+           
         // Calculer le nombre de cartes associées à l'utilisateur
         const nombreDeCartes = await calculer_nombre_carte(userId);
 

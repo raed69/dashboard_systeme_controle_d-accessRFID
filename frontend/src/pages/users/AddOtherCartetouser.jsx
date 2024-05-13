@@ -112,7 +112,8 @@ function AddOtherCartetouser({ id_user }) {
             <MenuItem value="vip">VIP</MenuItem>
             <MenuItem value="blacklist">Liste noire</MenuItem>
           </Select>
-
+          {statut !== "vip" && statut !== "blackliste" && (
+            <>
           <TextField
             label="Date d'expiration"
             type="date"
@@ -152,6 +153,8 @@ function AddOtherCartetouser({ id_user }) {
               </MenuItem>
             ))}
           </Select>
+          </>
+          )}
           <Button variant="contained" color="primary" onClick={handleSubmit}>
             Enregistrer
           </Button>

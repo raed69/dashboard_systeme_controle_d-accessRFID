@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "scripts": { 
+    "test":"vitest"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +19,8 @@
     "mysql2": "^3.9.2",
     "nodemon": "^3.1.0",
     "sequelize": "^6.37.1"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
   }
 }

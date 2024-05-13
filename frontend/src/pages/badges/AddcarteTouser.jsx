@@ -43,12 +43,11 @@ function AddCarteToUser() {
         const response = await fetch(`http://localhost:5000/lastuser/carte`);
         if (response.ok) {
           const data = await response.json();
-          console.log("Data from fetchUserCarte:", data); // Ajoutez ce point de contrôle pour vérifier la réponse de l'API
-          setIdCarte(data.id_carte_last_user || ""); // Mise à jour pour utiliser la clé correcte
+          setIdCarte(data.id_carte_last_user || "");
           setStatut("active");
-          setDateExpiration( null);
-          setNombreMaxEntree( "");
-          setTimezone( "");
+          setDateExpiration(null);
+          setNombreMaxEntree("");
+          setTimezone("");
         } else {
           console.error("Failed to fetch user carte");
         }
@@ -87,7 +86,6 @@ function AddCarteToUser() {
       });
 
       if (response.ok) {
-        console.log("Data saved successfully!");
         setSnackbarOpen(true);
         setTimeout(() => {
           window.location.href = "/carte";
@@ -100,15 +98,12 @@ function AddCarteToUser() {
     }
   };
 
-  function formatDate(date) {
+  const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
-  }
-
-  const maximumDate = new Date("YYYY-MM-DD"); // Remplacez YYYY-MM-DD par votre date
-  const formattedDate = formatDate(maximumDate);
+  };
 
   if (loading) {
     return <CircularProgress />;
@@ -118,7 +113,7 @@ function AddCarteToUser() {
     <div>
       <Grid container justifyContent="center" alignItems="center" spacing={4}>
         <Grid item xs={12} md={6}>
-          <Typography variant="h4"> la Carte de l'Utilisateur</Typography>
+          <Typography variant="h4">Carte de l'utilisateur</Typography>
           <TextField
             label="ID de la carte"
             variant="outlined"
@@ -127,11 +122,9 @@ function AddCarteToUser() {
             InputProps={{
               readOnly: true,
             }}
-            sx={{ mb: 2, mt: 2 }}
+            sx={{ mb: 2 }}
           />
           <Select
-            label="Statut de la carte"
-            variant="outlined"
             fullWidth
             value={statut}
             onChange={handleStatutChange}
@@ -140,55 +133,55 @@ function AddCarteToUser() {
             <MenuItem value="active">Actif</MenuItem>
             <MenuItem value="desactive">Désactivé</MenuItem>
             <MenuItem value="vip">VIP</MenuItem>
-            <MenuItem value="blackliste">Liste noire</MenuItem>
+            <MenuItem value="blackliste">Blacklisté</MenuItem>
           </Select>
 
-          <TextField
-            label="Date d'expiration"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            value={dateExpiration ? formatDate(dateExpiration) : ""}
-            onChange={(e) => {
-              const selectedDate = new Date(e.target.value);
-              setDateExpiration(selectedDate);
-            }}
-            inputProps={{
-              min: formatDate(new Date()),
-              max: formattedDate, // Utilisation de la date formatée sans l'heure
-            }}
-            sx={{ mb: 2 }}
-          />
+          {statut !== "vip" && statut !== "blackliste" && (
+            <>
+            
+                      <TextField
+                        label="Date d'expiration"
+                        type="date"
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                        value={dateExpiration ? formatDate(dateExpiration) : ""}
+                        onChange={(e) => {
+                          const selectedDate = new Date(e.target.value);
+                          setDateExpiration(selectedDate);
+                        }}
+                        sx={{ mb: 2 }}
+                      />
+              <TextField
+                label="Nombre maximal d'entrées"
+                variant="outlined"
+                fullWidth
+                value={nombreMaxEntree}
+                onChange={(e) => setNombreMaxEntree(e.target.value)}
+                sx={{ mb: 2 }}
+              />
 
-          <TextField
-            label="Nombre maximal d'entrées"
-            variant="outlined"
-            fullWidth
-            value={nombreMaxEntree}
-            onChange={(e) => setNombreMaxEntree(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-         
-          <Select
-            label='Timezone'
-            variant="outlined"
-            fullWidth
-            value={timezone}
-            onChange={handleTimezoneChange}
-            sx={{ mb: 2 }}
-          >
-            {timezoneOptions.map((option) => (
-              <MenuItem key={option.id_timezone} value={option.id_timezone}>
-                {option.nom}
-              </MenuItem>
-            ))}
-          </Select>
+              <Select
+                fullWidth
+                value={timezone}
+                onChange={handleTimezoneChange}
+                sx={{ mb: 2 }}
+              >
+                {timezoneOptions.map((option) => (
+                  <MenuItem key={option.id_timezone} value={option.id_timezone}>
+                    {option.nom}
+                  </MenuItem>
+                ))}
+              </Select>
+            </>
+          )}
+
           <Button variant="contained" color="primary" onClick={handleSubmit}>
             Enregistrer
           </Button>
         </Grid>
       </Grid>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
