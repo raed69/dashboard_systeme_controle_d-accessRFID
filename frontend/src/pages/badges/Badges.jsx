@@ -8,61 +8,44 @@ import { Box, Snackbar, Alert, Typography, useMediaQuery, Grid } from '@mui/mate
 import EditCarteForm from './EditCarteForm';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Badgereel from './Badgereel';
 
-function CustomPagination({ page, setPage, pageSize, setPageSize }) {
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-  };
 
-  const handlePageSizeChange = (newPageSize) => {
-    setPageSize(newPageSize);
-    setPage(0);
-  };
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-      <IconButton onClick={() => handlePageChange(page - 1)} disabled={page === 0}>
-        <KeyboardArrowLeft />
-      </IconButton>
-      <IconButton onClick={() => handlePageChange(page + 1)}>
-        <KeyboardArrowRight />
-      </IconButton>
-      <span style={{ marginLeft: '8px', marginRight: '8px' }}>Page: {page + 1}</span>
-      <span style={{ marginLeft: '8px', marginRight: '8px' }}>Taille de page:</span>
-      <select value={pageSize} onChange={(e) => handlePageSizeChange(Number(e.target.value))}>
-        <option value={5}>5</option>
-        <option value={10}>10</option>
-        <option value={20}>20</option>
-      </select>
-    </div>
-  );
-}
+ 
 
 const style = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '1000vw', 
-  maxWidth: '400px', 
+  width: '150%',
+  maxWidth: '400px',
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  border: '4px solid #000',
   boxShadow: 24,
-  p: 4,
-  overflowY: 'auto', 
+  p: 5,
+  overflowY: 'auto',
 };
 
 function Badges() {
   const [data, setData] = useState([]);
   const [selectedCarteId, setSelectedCarteId] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [openError, setOpenError] = useState(false); 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5); 
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
   const isSmallScreen = useMediaQuery('(max-width:600px)');
 
-  const toggleModal = (id_carte) => {
-    setOpen(!open);
+  const toggleEditModal = (id_carte) => {
+    setOpenEditModal(!openEditModal);
+    setSelectedCarteId(id_carte);
+  };
+
+  const toggleViewModal = (id_carte) => {
+    setOpenViewModal(!openViewModal);
     setSelectedCarteId(id_carte);
   };
 
@@ -97,7 +80,7 @@ function Badges() {
       setData(data.filter(carte => carte.id_carte !== id_carte));
     } catch (error) {
       console.error('Error deleting carte:', error);
-      setOpenError(true); 
+      setOpenError(true);
     }
   };
 
@@ -110,54 +93,67 @@ function Badges() {
     { field: 'numero', headerName: 'Numéro', width: 150 },
     { field: 'statut', headerName: 'Statut', width: 160 },
     { field: 'nombre_max_entree', headerName: 'Nombre maximal d\'entrées', width: 200 },
-    { 
-      field: 'date_expiration', 
-      headerName: 'Date d\'expiration', 
-      width: 160,
-    },
-    { field: 'propritaire', headerName: 'Propritaire', width: 180 },
+    { field: 'date_expiration', headerName: 'Date d\'expiration', width: 160 },
+    { field: 'propritaire', headerName: 'Propriétaire', width: 180 },
     {
       field: 'actions',
       headerName: '',
       width: isSmallScreen ? 100 : 150,
       sortable: false,
-      renderCell: (params) => {
-        return (
-          <div>
-            <IconButton 
-              onClick={(e) => {
-                e.stopPropagation(); 
-                toggleModal(params.row.id_carte);
-              }} 
-              sx={{ color: 'green' }}
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton 
-              onClick={(e) => {
-                e.stopPropagation(); 
-                handleDelete(params.row.id_carte);
-              }} 
-              sx={{ color: 'red' }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        );
-      },
+      renderCell: (params) => (
+        <div>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleEditModal(params.row.id_carte);
+            }}
+            sx={{ color: 'green' }}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(params.row.id_carte);
+            }}
+            sx={{ color: 'red' }}
+          >
+            <DeleteIcon />
+          </IconButton>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleViewModal(params.row.id_carte);
+            }}
+            sx={{ color: 'yellow' }}
+          >
+            <VisibilityIcon />
+          </IconButton>
+        </div>
+      ),
     },
   ];
 
   return (
     <>
       <Modal
-        open={open}
-        onClose={() => toggleModal()}
+        open={openEditModal}
+        onClose={() => toggleEditModal(null)}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
           {selectedCarteId && <EditCarteForm id_carte={selectedCarteId} />}
+        </Box>
+      </Modal>
+      <Modal
+        open={openViewModal}
+        onClose={() => toggleViewModal(null)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          {selectedCarteId && <Badgereel id_carte={selectedCarteId} />}
         </Box>
       </Modal>
       <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
@@ -168,18 +164,14 @@ function Badges() {
       <Grid container justifyContent="center">
         <Grid item xs={12} md={10}>
           <Box sx={{ height: 400, width: '100%' }}>
-            <div style={{ color: 'SkyBlue' }}>
-              <h1>Liste des badges</h1>
-            </div>
-            
+            <Typography variant="h4" style={{ color: 'SkyBlue', marginBottom: '16px' }}>Liste des badges</Typography>
             <DataGrid
               rows={data}
               columns={columns}
               getRowId={(row) => row.id_carte}
               checkboxSelection
-              // @ts-ignore
               pageSize={pageSize}
-              components={{ Toolbar: () => <GridToolbar><CustomPagination page={page} setPage={setPage} pageSize={pageSize} setPageSize={setPageSize} /></GridToolbar> }}
+              
             />
           </Box>
         </Grid>

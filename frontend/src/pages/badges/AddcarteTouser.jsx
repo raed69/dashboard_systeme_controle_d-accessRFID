@@ -84,11 +84,15 @@ function AddCarteToUser() {
           id_timezone: timezone,
         }),
       });
-
+      
       if (response.ok) {
         setSnackbarOpen(true);
         setTimeout(() => {
-          window.location.href = "/carte";
+          if (statut === "vip" || statut === "blackliste") {
+            window.location.href="/";
+          } else {
+            window.location.href = "/carte";
+          }
         }, 2000);
       } else {
         console.error("Failed to save data");

@@ -13,10 +13,10 @@ const Carte = sequelize.define('Carte', {
     numero: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
+        allowNull: false,   
     },
     statut: {
-        type: DataTypes.ENUM('active', 'desactive', 'vip', 'blackliste'),
+        type: DataTypes.ENUM('active', 'desactive', 'vip', 'blacklisté'),
         allowNull: true,
         defaultValue: 'active',
     },

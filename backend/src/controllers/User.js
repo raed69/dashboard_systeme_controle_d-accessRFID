@@ -94,11 +94,13 @@ const Update_user_carte = async (req, res, next) => {
   
       if (statut_selectee === 'vip') {
         console.log("Statut VIP sélectionné");
-        updateData.nombre_max_entree = 999999999; // Assurez-vous que cela a un sens dans votre contexte
+        updateData.nombre_max_entree = 999999999;
+        updateData.id_timezone= null; // Assurez-vous que cela a un sens dans votre contexte
        
       } else if (statut_selectee === 'blackliste') {
         console.log("Statut Blackliste sélectionné");
-       
+        updateData.nombre_max_entree = -99999999999;
+        updateData.id_timezone= null
       }
   
       // Mettre à jour la carte

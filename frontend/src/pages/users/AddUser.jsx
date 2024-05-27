@@ -12,7 +12,7 @@ import {
   Alert,
 } from "@mui/material";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-
+    
 function AddUserForm() {
   const {
     register,
@@ -105,13 +105,12 @@ function AddUserForm() {
         <Grid item xs={12}>
           <label htmlFor="photo">
             <Box display="flex" justifyContent="center" alignItems="center">
-              <Avatar
+            <Avatar
                 alt="User Photo"
                 src={selectedImage}
                 sx={{ width: 100, height: 100 }}
               >
-                {!selectedImage && <PhotoCameraIcon />}{" "}
-                {/* Utilisez une icône pour indiquer le chargement de la photo */}
+                {!selectedImage && <PhotoCameraIcon />}
               </Avatar>
             </Box>
             <input
@@ -129,6 +128,7 @@ function AddUserForm() {
             </Typography>
           )}
         </Grid>
+
 
         <Grid item xs={12} md={6}>
           <TextField

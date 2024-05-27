@@ -50,6 +50,7 @@ app.patch('/lastuser/carte',userrouter)
 
 
 ///API CARTE ///////
+app.get('/carte/visualizecarte/:id_carte',carterouter)
 app.post('/carte',carterouter)
 app.get('/cartes',carterouter)
 app.patch('/carte/update/:id_carte',carterouter)

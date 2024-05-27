@@ -1,4 +1,4 @@
-const { Sequelize, Op, and } = require("sequelize")
+const { Sequelize, Op, and, where } = require("sequelize")
 const { Numero_carte_genere } = require("../fonctions/FOR_Carte/numerogenere")
 const Carte = require("../models/Carte")
 const User = require("../models/User")
@@ -87,11 +87,51 @@ const DeleteCarte = async (req, res, next) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+const get_Vision_of_carte = async (req, res) => {
+    try {
+        const carteId = req.params.id_carte;
+
+        // Retrieve the card information
+        const carteExistance = await Carte.findOne({ where: { id_carte: carteId } });
+        if (!carteExistance) {
+            return res.status(404).json({ message: "Cette carte n'existe pas Dejà !!" });
+        }
+
+        // Retrieve the user associated with the card
+        const userDeCetteCarte = await User.findOne({ where: { id_user: carteExistance.id_user } });
+        if (!userDeCetteCarte) {
+            return res.status(404).json({ message: "Utilisateur associé à cette carte introuvable !!" });
+        }
+
+        // Get the user's photo
+        const photoUser = userDeCetteCarte.photo;
+
+        // Create the response object, excluding the id_user
+        const carteResponse = {
+            id_carte: carteExistance.id_carte,
+            numero: carteExistance.numero,
+            statut: carteExistance.statut,
+            nombre_max_entree: carteExistance.nombre_max_entree,
+            date_expiration: carteExistance.date_expiration,
+            id_timezone: carteExistance.id_timezone,
+            propritaire: carteExistance.propritaire,
+            photo: photoUser
+        };
+
+        // Respond with the card data and user photo
+        return res.status(200).json(carteResponse);
+    } catch (error) {
+        console.error('Error displaying the card:', error);
+        return res.status(500).json({ message: "Une erreur s'est produite lors de la récupération des données !" });
+    }
+};
+
 
 
 module.exports={
     creer_carte_default,
     get_cartes_having_user,
     update_carte,
-    DeleteCarte
+    DeleteCarte,
+    get_Vision_of_carte
 }     

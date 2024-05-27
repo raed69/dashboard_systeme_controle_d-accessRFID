@@ -228,5 +228,7 @@ const show_daily_accepted_events = async (req, res) => {
           res.status(500).send('Internal server error');
     }
   }
+  /////////////////////////////////////////////////////
+  
 
 module.exports = {percentage_accepted_event,percentage_error_events,percentage_warning_events, percentage_danger_events,show_daily_accepted_events,show_daily_Events,show_carte_type, show_dailyUser,calculer_la_pourcentage_user_nouveau_parjours ,calculer_pourcentage_carte_blacklist_en_total};
