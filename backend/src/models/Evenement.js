@@ -19,7 +19,7 @@ const Evenement = sequelize.define('Evenement', {
     },
     carte_existence: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true, // Fixed typo in the default value property name
+        defaultValue: true, 
     }
 });
 

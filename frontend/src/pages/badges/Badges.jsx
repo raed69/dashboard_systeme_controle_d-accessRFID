@@ -163,7 +163,7 @@ function Badges() {
       </Snackbar>
       <Grid container justifyContent="center">
         <Grid item xs={12} md={10}>
-          <Box sx={{ height: 400, width: '100%' }}>
+          <Box sx={{ height: 700, width: '100%' }}>
             <Typography variant="h4" style={{ color: 'SkyBlue', marginBottom: '16px' }}>Liste des badges</Typography>
             <DataGrid
               rows={data}

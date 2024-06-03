@@ -19,9 +19,11 @@ const creer_carte_default=async(req,res,next)=>{
 const get_cartes_having_user = async (req, res, next) => {
     try {
         const cartesWithUsers = await Carte.findAll({ where: { 
-            id_user: { [Op.not]: null },
-            id_timezone:{[Op.not]: null}
-        } });
+            id_user: { [Op.not]: null },              
+        }, 
+        order: [['id_carte', 'DESC']],
+    });
+        
         if (cartesWithUsers.length === 0) {
             return res.status(400).json({ message: "Désolé, aucune carte associée à un utilisateur !" });
         }

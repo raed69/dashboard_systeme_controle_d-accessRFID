@@ -128,7 +128,7 @@ function User() {
           {selectedUserId && <AddOtherCartetouser id_user={selectedUserId} />}
         </Box>
       </Modal>
-      <div style={{ height: 400, width: '95%' }}>
+      <div style={{ height: 700, width: '95%' }}>
         <div style={{ color: 'SkyBlue' }}>
           <h1>Liste des utilisateurs</h1>
         </div>
